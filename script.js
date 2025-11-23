@@ -36,9 +36,10 @@ const loseSound = document.getElementById("loseSound");
 
 // Initialize game
 function init() {
+    console.log('Initializing Filler Quest...');
     buildColorButtons();
     resetBtn.addEventListener("click", () => loadLevel(currentLevel));
-    newGameBtn.addEventListener("click", newGame);
+    if (newGameBtn) newGameBtn.addEventListener("click", newGame);
     soundToggle.addEventListener("click", toggleSound);
     overlayBtn.addEventListener("click", handleOverlayConfirm);
     
@@ -47,23 +48,69 @@ function init() {
     loadLevel(savedLevel);
     updateSoundButton();
     
-    // Initialize Base Mini App SDK
+    // Initialize Base Mini App SDK with proper ready handling
     initBaseMiniApp();
 }
 
 function initBaseMiniApp() {
+    console.log('Initializing Base Mini App SDK...');
+    
+    // Method 1: Standard Base SDK
     if (window.EmbedSDK) {
-        window.EmbedSDK.init();
-        console.log('Base Mini App SDK initialized');
+        try {
+            window.EmbedSDK.init();
+            console.log('Base Mini App SDK initialized successfully');
+            
+            // Call ready after a short delay to ensure SDK is fully loaded
+            setTimeout(() => {
+                if (window.EmbedSDK && window.EmbedSDK.actions) {
+                    window.EmbedSDK.actions.ready();
+                    console.log('Base SDK ready() called');
+                }
+            }, 100);
+        } catch (error) {
+            console.log('Base SDK initialization error:', error);
+        }
     }
     
-    // Detect if we're in an embedded environment
-    if (window.self !== window.top || window.ethereum?.isMiniApp) {
+    // Method 2: Farcaster Frame SDK
+    if (window.FarcasterFrameSdk) {
+        try {
+            FarcasterFrameSdk.actions.ready();
+            console.log('Farcaster Frame SDK ready() called');
+        } catch (error) {
+            console.log('Farcaster Frame SDK not available');
+        }
+    }
+    
+    // Method 3: Direct MetaMask/Mini App detection
+    if (window.ethereum?.isMiniApp) {
+        console.log('Running in Mini App environment');
         document.body.classList.add('embedded');
-        console.log('Running in embedded mode');
+    }
+    
+    // Method 4: Iframe detection for Base preview
+    if (window.self !== window.top) {
+        console.log('Running in iframe (Base preview)');
+        document.body.classList.add('embedded');
+        
+        // Send ready message for Base preview
+        setTimeout(() => {
+            window.parent.postMessage({
+                type: 'mini-app-ready',
+                data: { version: '1.0.0' }
+            }, '*');
+            console.log('Mini app ready message sent to parent');
+        }, 500);
+    }
+    
+    // Final fallback - if no SDK detected, just start the game
+    if (!window.EmbedSDK && !window.FarcasterFrameSdk && window.self === window.top) {
+        console.log('Running in standalone mode');
     }
 }
 
+// ... REST OF YOUR GAME FUNCTIONS REMAIN THE SAME ...
 function buildColorButtons() {
     buttonsEl.innerHTML = "";
     palette.forEach(color => {
@@ -257,5 +304,10 @@ function newGame() {
     loadLevel(1);
 }
 
-// Start the game
+// Start the game with multiple initialization methods
 document.addEventListener("DOMContentLoaded", init);
+
+// Additional event listener for Base preview
+window.addEventListener('load', () => {
+    console.log('Window fully loaded');
+});
