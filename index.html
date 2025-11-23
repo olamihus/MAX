@@ -60,7 +60,7 @@
     </div>
   </div>
 
-   <!-- Audio Elements -->
+     <!-- Audio Elements -->
   <audio id="moveSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/click-soft.mp3" preload="auto"></audio>
   <audio id="fillSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/pop-soft.mp3" preload="auto"></audio>
   <audio id="winSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/success-bell.mp3" preload="auto"></audio>
@@ -73,13 +73,19 @@
     // Make SDK available globally
     window.farcasterSDK = sdk;
     
-    // Initialize SDK
+    // Initialize SDK and call ready() IMMEDIATELY (like React useEffect)
     sdk.initialize().then(() => {
       console.log('Farcaster Mini App SDK initialized');
-      window.farcasterInitialized = true;
+      
+      // CALL READY() IMMEDIATELY - don't wait for user interaction!
+      sdk.actions.ready().then(() => {
+        console.log('Farcaster SDK ready() called successfully - splash screen should hide!');
+      }).catch(error => {
+        console.log('Farcaster SDK ready() error:', error);
+      });
+      
     }).catch(error => {
       console.log('Farcaster SDK not available, running in standalone mode');
-      window.farcasterInitialized = false;
     });
   </script>
   
