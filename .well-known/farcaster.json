@@ -2,16 +2,17 @@
   "accountAssociation": {
     "header": "",
     "payload": "", 
-    "signature": "0x5c4Cf0285984ACb2055a7a6c680860ad6EF7357E"
+    "signature": ""
   },
   "baseBuilder": {
-    "ownerAddress": ""
+    "ownerAddress": "0x5c4Cf0285984ACb2055a7a6c680860ad6EF7357E"
   },
   "miniapp": {
     "version": "1",
     "name": "Filler Quest",
     "homeUrl": "https://max-five-blue.vercel.app/",
     "iconUrl": "https://i.imgur.com/qvzaD42.png",
+    "imageUrl": "https://i.imgur.com/qvzaD42.png",  // ← ADD THIS LINE
     "splashImageUrl": "https://i.imgur.com/qvzaD42.png",
     "splashBackgroundColor": "#3367D6",
     "subtitle": "Colorful puzzle game",
