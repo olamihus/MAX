@@ -1,4 +1,4 @@
-// Simple Filler Quest Game - Farcaster Mini App Compatible
+// Simple Filler Quest Game
 const palette = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
 const floodDelay = 60;
 const POINT_MULTIPLIER = 10;
@@ -33,36 +33,12 @@ const fillSound = document.getElementById("fillSound");
 const winSound = document.getElementById("winSound");
 const loseSound = document.getElementById("loseSound");
 
-// ========== FARCASTER SDK READY FUNCTION ==========
-async function callFarcasterReady() {
-    console.log('Calling Farcaster SDK ready()...');
-    
-    if (window.farcasterSDK && window.farcasterInitialized) {
-        try {
-            await window.farcasterSDK.actions.ready();
-            console.log('Farcaster SDK ready() called successfully - splash screen should hide!');
-        } catch (error) {
-            console.log('Farcaster SDK ready() error:', error);
-        }
-    } else {
-        console.log('Farcaster SDK not available, running in standalone mode');
-    }
-}
-
 // ========== GAME INITIALIZATION ==========
-async function init() {
+function init() {
     console.log('Initializing Filler Quest...');
     buildColorButtons();
     
-    // Reset button with ready() call
-    resetBtn.addEventListener("click", async () => {
-        if (!window._readyCalled) {
-            await callFarcasterReady();
-            window._readyCalled = true;
-        }
-        loadLevel(currentLevel);
-    });
-    
+    resetBtn.addEventListener("click", () => loadLevel(currentLevel));
     soundToggle.addEventListener("click", toggleSound);
     overlayBtn.addEventListener("click", handleOverlayConfirm);
     
@@ -71,14 +47,7 @@ async function init() {
     loadLevel(savedLevel);
     updateSoundButton();
     
-    console.log('Game initialized, waiting for user interaction...');
-    
-    // If Farcaster SDK is ready, wait for user interaction to call ready()
-    if (window.farcasterInitialized) {
-        console.log('Farcaster SDK detected - call ready() on first user action');
-    } else {
-        console.log('Running in standalone mode - no SDK needed');
-    }
+    console.log('Game fully loaded!');
 }
 
 // ========== GAME FUNCTIONS ==========
@@ -89,14 +58,7 @@ function buildColorButtons() {
         btn.className = "color-btn";
         btn.style.backgroundColor = color;
         btn.dataset.color = color;
-        btn.addEventListener("click", async () => {
-            // Call ready() on FIRST user interaction
-            if (!window._readyCalled) {
-                await callFarcasterReady();
-                window._readyCalled = true;
-            }
-            handleColorPick(color);
-        });
+        btn.addEventListener("click", () => handleColorPick(color));
         buttonsEl.appendChild(btn);
     });
 }
@@ -168,7 +130,6 @@ function floodFill(newColor) {
     const queue = [[0, 0]];
     const steps = [];
     
-    // Find all connected tiles
     while (queue.length > 0) {
         const [r, c] = queue.shift();
         const key = `${r},${c}`;
@@ -179,7 +140,6 @@ function floodFill(newColor) {
         if (!steps[0]) steps[0] = [];
         steps[0].push([r, c]);
         
-        // Check neighbors
         const neighbors = [[r-1, c], [r+1, c], [r, c-1], [r, c+1]];
         for (const [nr, nc] of neighbors) {
             if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
@@ -194,7 +154,6 @@ function floodFill(newColor) {
     activeColor = newColor;
     highlightActiveColor();
     
-    // Animate the flood fill
     steps[0].forEach(([r, c], index) => {
         setTimeout(() => {
             grid[r][c].color = newColor;
