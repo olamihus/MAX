@@ -4,18 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <!-- ========== BASE MINI APP TAGS ========== -->
+  <!-- ========== BASE MINI APP REQUIRED TAGS ========== -->
   <meta name="mini-app" content="embed-sdk-v1">
   
-  <!-- ========== FARCASTER FRAME TAGS (Like working apps) ========== -->
+  <!-- ========== OLD FARCASTER MINI APP FORMAT (for Base.dev preview) ========== -->
+  <meta 
+    name="fc:miniapp" 
+    content='{
+      "version": "next",
+      "imageUrl": "https://i.imgur.com/qvzaD42.png",
+      "button": {
+        "title": "Play Filler Quest",
+        "action": {
+          "type": "launch_frame", 
+          "url": "https://max-five-blue.vercel.app/"
+        }
+      }
+    }'
+  />
+  
+  <!-- ========== NEW FARCASTER FRAME TAGS ========== -->
   <meta property="fc:frame" content="vNext" />
   <meta property="fc:frame:image" content="https://i.imgur.com/qvzaD42.png" />
   <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
   <meta property="fc:frame:button:1" content="Play Filler Quest" />
   <meta property="fc:frame:post_url" content="https://max-five-blue.vercel.app/" />
-  
-  <!-- Farcaster Mini App Tag -->
-  <meta name="fc:miniapp" content="https://max-five-blue.vercel.app/" />
   
   <!-- ========== SOCIAL TAGS ========== -->
   <meta property="og:title" content="Filler Quest" />
@@ -33,6 +46,9 @@
   
   <title>Filler Quest</title>
   <link rel="stylesheet" href="style.css" />
+  
+  <!-- Manifest Link -->
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <div class="app">
