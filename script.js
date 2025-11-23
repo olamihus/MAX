@@ -1,6 +1,4 @@
-// Simple Filler Quest Game - Base Preview Compatible
-console.log('Filler Quest loading...');
-
+// Simple Filler Quest Game - Base Mini App Compatible
 const palette = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
 const floodDelay = 60;
 const POINT_MULTIPLIER = 10;
@@ -35,25 +33,85 @@ const fillSound = document.getElementById("fillSound");
 const winSound = document.getElementById("winSound");
 const loseSound = document.getElementById("loseSound");
 
-// Initialize game
+// ========== BASE SDK READY FUNCTION ==========
+function callReady() {
+    console.log('Calling ready() for Base SDK...');
+    
+    // Method 1: Base SDK
+    if (window.EmbedSDK && window.EmbedSDK.actions) {
+        try {
+            window.EmbedSDK.actions.ready();
+            console.log('Base SDK ready() called successfully');
+        } catch (error) {
+            console.log('Base SDK ready() error:', error);
+        }
+    }
+    
+    // Method 2: Farcaster SDK
+    if (window.FarcasterFrameSdk) {
+        try {
+            FarcasterFrameSdk.actions.ready();
+            console.log('Farcaster SDK ready() called');
+        } catch (error) {
+            console.log('Farcaster SDK not available');
+        }
+    }
+    
+    // Method 3: PostMessage for Base preview
+    if (window.self !== window.top) {
+        setTimeout(() => {
+            window.parent.postMessage({ 
+                type: 'mini-app-ready',
+                data: { 
+                    version: '1.0.0',
+                    app: 'Filler Quest'
+                }
+            }, '*');
+            console.log('Mini app ready message sent to parent');
+        }, 100);
+    }
+}
+
+// ========== BASE MINI APP INITIALIZATION ==========
+function initBaseMiniApp() {
+    console.log('Base Mini App SDK initialized, waiting for user interaction...');
+    
+    if (window.EmbedSDK) {
+        window.EmbedSDK.init();
+    }
+    
+    // Don't call ready() here - wait for button click!
+}
+
+// ========== GAME INITIALIZATION ==========
 function init() {
-    console.log('Game initializing...');
+    console.log('Initializing Filler Quest...');
     buildColorButtons();
-    resetBtn.addEventListener("click", () => loadLevel(currentLevel));
+    
+    // Reset button with ready() call
+    resetBtn.addEventListener("click", () => {
+        if (!window._readyCalled) {
+            callReady();
+            window._readyCalled = true;
+        }
+        loadLevel(currentLevel);
+    });
+    
     soundToggle.addEventListener("click", toggleSound);
     overlayBtn.addEventListener("click", handleOverlayConfirm);
     
+    // Load saved level or start from level 1
     const savedLevel = Number(localStorage.getItem('fillerLevel')) || 1;
     loadLevel(savedLevel);
     updateSoundButton();
     
-    console.log('Game fully loaded and ready!');
+    // Initialize Base Mini App SDK
+    initBaseMiniApp();
+    
+    console.log('Game initialized, waiting for user interaction...');
 }
 
-// ... (KEEP ALL YOUR EXISTING GAME FUNCTIONS THE SAME)
-// buildColorButtons, loadLevel, createBoard, handleColorPick, floodFill, etc.
-// Copy all your game logic functions from your current script.js
-
+// ========== GAME FUNCTIONS ==========
 function buildColorButtons() {
     buttonsEl.innerHTML = "";
     palette.forEach(color => {
@@ -115,7 +173,14 @@ function highlightActiveColor() {
     });
 }
 
+// ========== UPDATED HANDLE COLOR PICK WITH READY() CALL ==========
 function handleColorPick(newColor) {
+    // Call ready() on FIRST user interaction (button click)
+    if (!window._readyCalled) {
+        callReady();
+        window._readyCalled = true;
+    }
+    
     if (animating || newColor === activeColor || moveCount >= moveLimit) return;
     
     playSound(moveSound);
@@ -133,6 +198,7 @@ function floodFill(newColor) {
     const queue = [[0, 0]];
     const steps = [];
     
+    // Find all connected tiles
     while (queue.length > 0) {
         const [r, c] = queue.shift();
         const key = `${r},${c}`;
@@ -143,6 +209,7 @@ function floodFill(newColor) {
         if (!steps[0]) steps[0] = [];
         steps[0].push([r, c]);
         
+        // Check neighbors
         const neighbors = [[r-1, c], [r+1, c], [r, c-1], [r, c+1]];
         for (const [nr, nc] of neighbors) {
             if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
@@ -157,6 +224,7 @@ function floodFill(newColor) {
     activeColor = newColor;
     highlightActiveColor();
     
+    // Animate the flood fill
     steps[0].forEach(([r, c], index) => {
         setTimeout(() => {
             grid[r][c].color = newColor;
@@ -236,5 +304,5 @@ function updateSoundButton() {
     soundToggle.textContent = soundEnabled ? "🔊 Sound" : "🔇 Muted";
 }
 
-// Start the game
+// ========== START THE GAME ==========
 document.addEventListener("DOMContentLoaded", init);
