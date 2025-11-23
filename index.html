@@ -4,51 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <!-- ========== BASE MINI APP REQUIRED TAGS ========== -->
+  <!-- Base Mini App Tags -->
   <meta name="mini-app" content="embed-sdk-v1">
   
-  <!-- ========== OLD FARCASTER MINI APP FORMAT (for Base.dev preview) ========== -->
-  <meta 
-    name="fc:miniapp" 
-    content='{
-      "version": "next",
-      "imageUrl": "https://i.imgur.com/qvzaD42.png",
-      "button": {
-        "title": "Play Filler Quest",
-        "action": {
-          "type": "launch_frame", 
-          "url": "https://max-five-blue.vercel.app/"
-        }
-      }
-    }'
-  />
-  
-  <!-- ========== NEW FARCASTER FRAME TAGS ========== -->
+  <!-- Farcaster Tags -->
   <meta property="fc:frame" content="vNext" />
   <meta property="fc:frame:image" content="https://i.imgur.com/qvzaD42.png" />
   <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
   <meta property="fc:frame:button:1" content="Play Filler Quest" />
   <meta property="fc:frame:post_url" content="https://max-five-blue.vercel.app/" />
   
-  <!-- ========== SOCIAL TAGS ========== -->
-  <meta property="og:title" content="Filler Quest" />
-  <meta property="og:description" content="Fill each board before the moves run out! A colorful puzzle game." />
-  <meta property="og:image" content="https://i.imgur.com/qvzaD42.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://max-five-blue.vercel.app/" />
+  <meta name="fc:miniapp" content='{"version":"next","imageUrl":"https://i.imgur.com/qvzaD42.png","button":{"title":"Play Filler Quest","action":{"type":"launch_frame","url":"https://max-five-blue.vercel.app/"}}}' />
   
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Filler Quest" />
-  <meta name="twitter:description" content="Fill each board before the moves run out! A colorful puzzle game." />
-  <meta name="twitter:image" content="https://i.imgur.com/qvzaD42.png" />
+  <!-- Social Tags -->
+  <meta property="og:title" content="Filler Quest" />
+  <meta property="og:description" content="Fill each board before the moves run out!" />
+  <meta property="og:image" content="https://i.imgur.com/qvzaD42.png" />
+  <meta property="og:url" content="https://max-five-blue.vercel.app/" />
   
   <title>Filler Quest</title>
   <link rel="stylesheet" href="style.css" />
-  
-  <!-- Manifest Link -->
-  <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <div class="app">
@@ -73,7 +48,6 @@
 
     <div class="game-controls">
       <button id="resetBtn" class="reset-btn">Restart Level</button>
-      <button id="newGameBtn" class="new-game-btn">New Game</button>
       <button id="soundToggle" class="sound-btn">🔊 Sound</button>
     </div>
   </div>
@@ -92,8 +66,41 @@
   <audio id="winSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/success-bell.mp3" preload="auto"></audio>
   <audio id="loseSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/error-tone.mp3" preload="auto"></audio>
 
-  <!-- Base Mini App SDK -->
+  <!-- Base SDK -->
   <script src="https://embed-sdk.base.org/embed-sdk.js"></script>
+  
+  <!-- Simple Game Script -->
+  <script>
+    // Simple Base SDK initialization
+    if (window.EmbedSDK) {
+      window.EmbedSDK.init();
+      console.log('Base SDK initialized');
+      
+      // Call ready immediately
+      setTimeout(() => {
+        if (window.EmbedSDK && window.EmbedSDK.actions) {
+          window.EmbedSDK.actions.ready();
+          console.log('Base SDK ready() called');
+        }
+      }, 100);
+    }
+    
+    // Also try Farcaster SDK
+    if (window.FarcasterFrameSdk) {
+      FarcasterFrameSdk.actions.ready();
+      console.log('Farcaster SDK ready() called');
+    }
+    
+    // If in iframe (Base preview), send ready message
+    if (window.self !== window.top) {
+      setTimeout(() => {
+        window.parent.postMessage({ type: 'mini-app-ready' }, '*');
+        console.log('Mini app ready message sent');
+      }, 200);
+    }
+  </script>
+  
+  <!-- Your Main Game Script -->
   <script src="script.js"></script>
 </body>
 </html>
