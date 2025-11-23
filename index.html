@@ -60,47 +60,30 @@
     </div>
   </div>
 
-  <!-- Audio Elements -->
+   <!-- Audio Elements -->
   <audio id="moveSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/click-soft.mp3" preload="auto"></audio>
   <audio id="fillSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/pop-soft.mp3" preload="auto"></audio>
   <audio id="winSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/success-bell.mp3" preload="auto"></audio>
   <audio id="loseSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/error-tone.mp3" preload="auto"></audio>
 
-  <!-- Base SDK -->
-  <script src="https://embed-sdk.base.org/embed-sdk.js"></script>
-  
-  <!-- Simple Game Script -->
-  <script>
-    // Simple Base SDK initialization
-    if (window.EmbedSDK) {
-      window.EmbedSDK.init();
-      console.log('Base SDK initialized');
-      
-      // Call ready immediately
-      setTimeout(() => {
-        if (window.EmbedSDK && window.EmbedSDK.actions) {
-          window.EmbedSDK.actions.ready();
-          console.log('Base SDK ready() called');
-        }
-      }, 100);
-    }
+  <!-- ========== FARCASTER MINI APP SDK ========== -->
+  <script type="module">
+    import { sdk } from 'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.0.6/+esm';
     
-    // Also try Farcaster SDK
-    if (window.FarcasterFrameSdk) {
-      FarcasterFrameSdk.actions.ready();
-      console.log('Farcaster SDK ready() called');
-    }
+    // Make SDK available globally
+    window.farcasterSDK = sdk;
     
-    // If in iframe (Base preview), send ready message
-    if (window.self !== window.top) {
-      setTimeout(() => {
-        window.parent.postMessage({ type: 'mini-app-ready' }, '*');
-        console.log('Mini app ready message sent');
-      }, 200);
-    }
+    // Initialize SDK
+    sdk.initialize().then(() => {
+      console.log('Farcaster Mini App SDK initialized');
+      window.farcasterInitialized = true;
+    }).catch(error => {
+      console.log('Farcaster SDK not available, running in standalone mode');
+      window.farcasterInitialized = false;
+    });
   </script>
   
-  <!-- Your Main Game Script -->
+  <!-- Your Game Script -->
   <script src="script.js"></script>
 </body>
 </html>
