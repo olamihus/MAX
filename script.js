@@ -1,4 +1,6 @@
-// Simple Filler Quest Game
+// Simple Filler Quest Game - Base Preview Compatible
+console.log('Filler Quest loading...');
+
 const palette = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
 const floodDelay = 60;
 const POINT_MULTIPLIER = 10;
@@ -21,7 +23,6 @@ const levelDisplay = document.getElementById("levelDisplay");
 const pointsTotalEl = document.getElementById("pointsTotal");
 const buttonsEl = document.getElementById("colorButtons");
 const resetBtn = document.getElementById("resetBtn");
-const newGameBtn = document.getElementById("newGameBtn");
 const soundToggle = document.getElementById("soundToggle");
 const overlay = document.getElementById("levelOverlay");
 const overlayTitle = document.getElementById("overlayTitle");
@@ -36,81 +37,23 @@ const loseSound = document.getElementById("loseSound");
 
 // Initialize game
 function init() {
-    console.log('Initializing Filler Quest...');
+    console.log('Game initializing...');
     buildColorButtons();
     resetBtn.addEventListener("click", () => loadLevel(currentLevel));
-    if (newGameBtn) newGameBtn.addEventListener("click", newGame);
     soundToggle.addEventListener("click", toggleSound);
     overlayBtn.addEventListener("click", handleOverlayConfirm);
     
-    // Load saved level or start from level 1
     const savedLevel = Number(localStorage.getItem('fillerLevel')) || 1;
     loadLevel(savedLevel);
     updateSoundButton();
     
-    // Initialize Base Mini App SDK with proper ready handling
-    initBaseMiniApp();
+    console.log('Game fully loaded and ready!');
 }
 
-function initBaseMiniApp() {
-    console.log('Initializing Base Mini App SDK...');
-    
-    // Method 1: Standard Base SDK
-    if (window.EmbedSDK) {
-        try {
-            window.EmbedSDK.init();
-            console.log('Base Mini App SDK initialized successfully');
-            
-            // Call ready after a short delay to ensure SDK is fully loaded
-            setTimeout(() => {
-                if (window.EmbedSDK && window.EmbedSDK.actions) {
-                    window.EmbedSDK.actions.ready();
-                    console.log('Base SDK ready() called');
-                }
-            }, 100);
-        } catch (error) {
-            console.log('Base SDK initialization error:', error);
-        }
-    }
-    
-    // Method 2: Farcaster Frame SDK
-    if (window.FarcasterFrameSdk) {
-        try {
-            FarcasterFrameSdk.actions.ready();
-            console.log('Farcaster Frame SDK ready() called');
-        } catch (error) {
-            console.log('Farcaster Frame SDK not available');
-        }
-    }
-    
-    // Method 3: Direct MetaMask/Mini App detection
-    if (window.ethereum?.isMiniApp) {
-        console.log('Running in Mini App environment');
-        document.body.classList.add('embedded');
-    }
-    
-    // Method 4: Iframe detection for Base preview
-    if (window.self !== window.top) {
-        console.log('Running in iframe (Base preview)');
-        document.body.classList.add('embedded');
-        
-        // Send ready message for Base preview
-        setTimeout(() => {
-            window.parent.postMessage({
-                type: 'mini-app-ready',
-                data: { version: '1.0.0' }
-            }, '*');
-            console.log('Mini app ready message sent to parent');
-        }, 500);
-    }
-    
-    // Final fallback - if no SDK detected, just start the game
-    if (!window.EmbedSDK && !window.FarcasterFrameSdk && window.self === window.top) {
-        console.log('Running in standalone mode');
-    }
-}
+// ... (KEEP ALL YOUR EXISTING GAME FUNCTIONS THE SAME)
+// buildColorButtons, loadLevel, createBoard, handleColorPick, floodFill, etc.
+// Copy all your game logic functions from your current script.js
 
-// ... REST OF YOUR GAME FUNCTIONS REMAIN THE SAME ...
 function buildColorButtons() {
     buttonsEl.innerHTML = "";
     palette.forEach(color => {
@@ -190,7 +133,6 @@ function floodFill(newColor) {
     const queue = [[0, 0]];
     const steps = [];
     
-    // Find all connected tiles
     while (queue.length > 0) {
         const [r, c] = queue.shift();
         const key = `${r},${c}`;
@@ -201,7 +143,6 @@ function floodFill(newColor) {
         if (!steps[0]) steps[0] = [];
         steps[0].push([r, c]);
         
-        // Check neighbors
         const neighbors = [[r-1, c], [r+1, c], [r, c-1], [r, c+1]];
         for (const [nr, nc] of neighbors) {
             if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
@@ -216,7 +157,6 @@ function floodFill(newColor) {
     activeColor = newColor;
     highlightActiveColor();
     
-    // Animate the flood fill
     steps[0].forEach(([r, c], index) => {
         setTimeout(() => {
             grid[r][c].color = newColor;
@@ -296,18 +236,5 @@ function updateSoundButton() {
     soundToggle.textContent = soundEnabled ? "🔊 Sound" : "🔇 Muted";
 }
 
-function newGame() {
-    totalPoints = 0;
-    localStorage.setItem('fillerPoints', '0');
-    localStorage.setItem('fillerLevel', '1');
-    updateDisplays();
-    loadLevel(1);
-}
-
-// Start the game with multiple initialization methods
+// Start the game
 document.addEventListener("DOMContentLoaded", init);
-
-// Additional event listener for Base preview
-window.addEventListener('load', () => {
-    console.log('Window fully loaded');
-});
