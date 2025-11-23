@@ -1,4 +1,4 @@
-// Simple Filler Quest Game - Base Mini App Compatible
+// Simple Filler Quest Game - Farcaster Mini App Compatible
 const palette = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
 const floodDelay = 60;
 const POINT_MULTIPLIER = 10;
@@ -33,65 +33,31 @@ const fillSound = document.getElementById("fillSound");
 const winSound = document.getElementById("winSound");
 const loseSound = document.getElementById("loseSound");
 
-// ========== BASE SDK READY FUNCTION ==========
-function callReady() {
-    console.log('Calling ready() for Base SDK...');
+// ========== FARCASTER SDK READY FUNCTION ==========
+async function callFarcasterReady() {
+    console.log('Calling Farcaster SDK ready()...');
     
-    // Method 1: Base SDK
-    if (window.EmbedSDK && window.EmbedSDK.actions) {
+    if (window.farcasterSDK && window.farcasterInitialized) {
         try {
-            window.EmbedSDK.actions.ready();
-            console.log('Base SDK ready() called successfully');
+            await window.farcasterSDK.actions.ready();
+            console.log('Farcaster SDK ready() called successfully - splash screen should hide!');
         } catch (error) {
-            console.log('Base SDK ready() error:', error);
+            console.log('Farcaster SDK ready() error:', error);
         }
+    } else {
+        console.log('Farcaster SDK not available, running in standalone mode');
     }
-    
-    // Method 2: Farcaster SDK
-    if (window.FarcasterFrameSdk) {
-        try {
-            FarcasterFrameSdk.actions.ready();
-            console.log('Farcaster SDK ready() called');
-        } catch (error) {
-            console.log('Farcaster SDK not available');
-        }
-    }
-    
-    // Method 3: PostMessage for Base preview
-    if (window.self !== window.top) {
-        setTimeout(() => {
-            window.parent.postMessage({ 
-                type: 'mini-app-ready',
-                data: { 
-                    version: '1.0.0',
-                    app: 'Filler Quest'
-                }
-            }, '*');
-            console.log('Mini app ready message sent to parent');
-        }, 100);
-    }
-}
-
-// ========== BASE MINI APP INITIALIZATION ==========
-function initBaseMiniApp() {
-    console.log('Base Mini App SDK initialized, waiting for user interaction...');
-    
-    if (window.EmbedSDK) {
-        window.EmbedSDK.init();
-    }
-    
-    // Don't call ready() here - wait for button click!
 }
 
 // ========== GAME INITIALIZATION ==========
-function init() {
+async function init() {
     console.log('Initializing Filler Quest...');
     buildColorButtons();
     
     // Reset button with ready() call
-    resetBtn.addEventListener("click", () => {
+    resetBtn.addEventListener("click", async () => {
         if (!window._readyCalled) {
-            callReady();
+            await callFarcasterReady();
             window._readyCalled = true;
         }
         loadLevel(currentLevel);
@@ -105,10 +71,14 @@ function init() {
     loadLevel(savedLevel);
     updateSoundButton();
     
-    // Initialize Base Mini App SDK
-    initBaseMiniApp();
-    
     console.log('Game initialized, waiting for user interaction...');
+    
+    // If Farcaster SDK is ready, wait for user interaction to call ready()
+    if (window.farcasterInitialized) {
+        console.log('Farcaster SDK detected - call ready() on first user action');
+    } else {
+        console.log('Running in standalone mode - no SDK needed');
+    }
 }
 
 // ========== GAME FUNCTIONS ==========
@@ -119,7 +89,14 @@ function buildColorButtons() {
         btn.className = "color-btn";
         btn.style.backgroundColor = color;
         btn.dataset.color = color;
-        btn.addEventListener("click", () => handleColorPick(color));
+        btn.addEventListener("click", async () => {
+            // Call ready() on FIRST user interaction
+            if (!window._readyCalled) {
+                await callFarcasterReady();
+                window._readyCalled = true;
+            }
+            handleColorPick(color);
+        });
         buttonsEl.appendChild(btn);
     });
 }
@@ -173,14 +150,7 @@ function highlightActiveColor() {
     });
 }
 
-// ========== UPDATED HANDLE COLOR PICK WITH READY() CALL ==========
 function handleColorPick(newColor) {
-    // Call ready() on FIRST user interaction (button click)
-    if (!window._readyCalled) {
-        callReady();
-        window._readyCalled = true;
-    }
-    
     if (animating || newColor === activeColor || moveCount >= moveLimit) return;
     
     playSound(moveSound);
