@@ -9,8 +9,8 @@ let grid = [];
 let activeColor = "";
 let moveCount = 0;
 let moveLimit = 0;
-let totalPoints = Number(localStorage.getItem('fillerPoints')) || 0;
-let soundEnabled = localStorage.getItem('fillerSound') !== 'off';
+let totalPoints = 0;
+let soundEnabled = true;
 let animating = false;
 
 // DOM elements
@@ -33,24 +33,29 @@ const fillSound = document.getElementById("fillSound");
 const winSound = document.getElementById("winSound");
 const loseSound = document.getElementById("loseSound");
 
-// ========== GAME INITIALIZATION ==========
+// Farcaster Mini App SDK Integration
+async function initFrame() {
+    try {
+        // Wait for the SDK to be ready
+        if (window.FarcasterMiniAppSDK) {
+            await window.FarcasterMiniAppSDK.actions.ready();
+            console.log('Mini App ready - splash screen hidden');
+        }
+    } catch (error) {
+        console.log('Mini App SDK not available, running in standalone mode');
+    }
+}
+
+// Initialize game
 function init() {
-    console.log('Initializing Filler Quest...');
     buildColorButtons();
-    
     resetBtn.addEventListener("click", () => loadLevel(currentLevel));
     soundToggle.addEventListener("click", toggleSound);
     overlayBtn.addEventListener("click", handleOverlayConfirm);
     
-    // Load saved level or start from level 1
-    const savedLevel = Number(localStorage.getItem('fillerLevel')) || 1;
-    loadLevel(savedLevel);
-    updateSoundButton();
-    
-    console.log('Game fully loaded!');
+    loadLevel(1);
 }
 
-// ========== GAME FUNCTIONS ==========
 function buildColorButtons() {
     buttonsEl.innerHTML = "";
     palette.forEach(color => {
@@ -65,8 +70,6 @@ function buildColorButtons() {
 
 function loadLevel(level) {
     currentLevel = level;
-    localStorage.setItem('fillerLevel', currentLevel.toString());
-    
     const size = 4 + Math.floor((level - 1) / 2);
     moveLimit = Math.max(size * 2, size + 4);
     moveCount = 0;
@@ -130,6 +133,7 @@ function floodFill(newColor) {
     const queue = [[0, 0]];
     const steps = [];
     
+    // Find all connected tiles
     while (queue.length > 0) {
         const [r, c] = queue.shift();
         const key = `${r},${c}`;
@@ -140,6 +144,7 @@ function floodFill(newColor) {
         if (!steps[0]) steps[0] = [];
         steps[0].push([r, c]);
         
+        // Check neighbors
         const neighbors = [[r-1, c], [r+1, c], [r, c-1], [r, c+1]];
         for (const [nr, nc] of neighbors) {
             if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
@@ -154,6 +159,7 @@ function floodFill(newColor) {
     activeColor = newColor;
     highlightActiveColor();
     
+    // Animate the flood fill
     steps[0].forEach(([r, c], index) => {
         setTimeout(() => {
             grid[r][c].color = newColor;
@@ -177,7 +183,6 @@ function checkGameState() {
     if (allSameColor) {
         const points = Math.max(moveLimit - moveCount, 0) * POINT_MULTIPLIER;
         totalPoints += points;
-        localStorage.setItem('fillerPoints', totalPoints.toString());
         playSound(winSound);
         showOverlay("Level Complete!", `+${points} points!`, "next");
     } else if (moveCount >= moveLimit) {
@@ -225,13 +230,11 @@ function playSound(audio) {
 
 function toggleSound() {
     soundEnabled = !soundEnabled;
-    localStorage.setItem('fillerSound', soundEnabled ? 'on' : 'off');
-    updateSoundButton();
-}
-
-function updateSoundButton() {
     soundToggle.textContent = soundEnabled ? "🔊 Sound" : "🔇 Muted";
 }
 
-// ========== START THE GAME ==========
-document.addEventListener("DOMContentLoaded", init);
+// Start the game
+document.addEventListener("DOMContentLoaded", async () => {
+    await initFrame();  // ← This hides the splash screen
+    init();
+});
