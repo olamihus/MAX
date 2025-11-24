@@ -4,26 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <!-- Base Mini App Tags -->
+  <!-- ========== BASE MINI APP REQUIRED TAGS ========== -->
   <meta name="mini-app" content="embed-sdk-v1">
   
-  <!-- Farcaster Tags -->
+  <!-- ========== OLD FARCASTER MINI APP FORMAT (for Base.dev preview) ========== -->
+  <meta 
+    name="fc:miniapp" 
+    content='{
+      "version": "next",
+      "imageUrl": "https://i.imgur.com/qvzaD42.png",
+      "button": {
+        "title": "Play Filler Quest",
+        "action": {
+          "type": "launch_frame", 
+          "url": "https://max-five-blue.vercel.app/"
+        }
+      }
+    }'
+  />
+  
+  <!-- ========== NEW FARCASTER FRAME TAGS ========== -->
   <meta property="fc:frame" content="vNext" />
   <meta property="fc:frame:image" content="https://i.imgur.com/qvzaD42.png" />
   <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
   <meta property="fc:frame:button:1" content="Play Filler Quest" />
   <meta property="fc:frame:post_url" content="https://max-five-blue.vercel.app/" />
   
-  <meta name="fc:miniapp" content='{"version":"next","imageUrl":"https://i.imgur.com/qvzaD42.png","button":{"title":"Play Filler Quest","action":{"type":"launch_frame","url":"https://max-five-blue.vercel.app/"}}}' />
-  
-  <!-- Social Tags -->
+  <!-- ========== SOCIAL TAGS ========== -->
   <meta property="og:title" content="Filler Quest" />
-  <meta property="og:description" content="Fill each board before the moves run out!" />
+  <meta property="og:description" content="Fill each board before the moves run out! A colorful puzzle game." />
   <meta property="og:image" content="https://i.imgur.com/qvzaD42.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type" content="website" />
   <meta property="og:url" content="https://max-five-blue.vercel.app/" />
+  
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Filler Quest" />
+  <meta name="twitter:description" content="Fill each board before the moves run out! A colorful puzzle game." />
+  <meta name="twitter:image" content="https://i.imgur.com/qvzaD42.png" />
   
   <title>Filler Quest</title>
   <link rel="stylesheet" href="style.css" />
+  
+  <!-- Manifest Link -->
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <div class="app">
@@ -48,6 +73,7 @@
 
     <div class="game-controls">
       <button id="resetBtn" class="reset-btn">Restart Level</button>
+      <button id="newGameBtn" class="new-game-btn">New Game</button>
       <button id="soundToggle" class="sound-btn">🔊 Sound</button>
     </div>
   </div>
@@ -60,32 +86,22 @@
     </div>
   </div>
 
-     <!-- Audio Elements -->
+  <!-- Audio Elements -->
   <audio id="moveSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/click-soft.mp3" preload="auto"></audio>
   <audio id="fillSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/pop-soft.mp3" preload="auto"></audio>
   <audio id="winSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/success-bell.mp3" preload="auto"></audio>
   <audio id="loseSound" src="https://cdn.jsdelivr.net/gh/itsrealfake/audio-snippets@master/error-tone.mp3" preload="auto"></audio>
 
-  <!-- ========== FARCASTER MINI APP SDK ========== -->
+  <!-- Base Mini App SDK -->
+  <script src="https://embed-sdk.base.org/embed-sdk.js"></script>
+  
+  <!-- Farcaster Mini App SDK - THIS HIDES THE SPLASH SCREEN -->
   <script type="module">
-    import { sdk } from 'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.0.6/+esm';
+    import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk';
+    window.FarcasterMiniAppSDK = sdk;
     
-    // Make SDK available globally
-    window.farcasterSDK = sdk;
-    
-    // Initialize SDK and call ready() IMMEDIATELY (like React useEffect)
-    sdk.initialize().then(() => {
-      console.log('Farcaster Mini App SDK initialized');
-      
-      // CALL READY() IMMEDIATELY - don't wait for user interaction!
-      sdk.actions.ready().then(() => {
-        console.log('Farcaster SDK ready() called successfully - splash screen should hide!');
-      }).catch(error => {
-        console.log('Farcaster SDK ready() error:', error);
-      });
-      
-    }).catch(error => {
-      console.log('Farcaster SDK not available, running in standalone mode');
+    document.addEventListener('DOMContentLoaded', async () => {
+      await sdk.actions.ready();
     });
   </script>
   
